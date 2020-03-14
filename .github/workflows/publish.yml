@@ -1,0 +1,61 @@
+name: Docker Build
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - v*
+
+env:
+  IMAGE_NAME: server
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x]
+
+    steps:
+      - name: Checkout latest code
+        uses: actions/checkout@v2
+      - name: Use node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Run tests
+        run: |
+          npm run test
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout latest code
+        uses: actions/checkout@v1
+
+      - name: Build docker image
+        run: docker build . --file Dockerfile --tag image
+
+      - name: Push image
+        run: |
+          IMAGE_ID=negativelatency/$IMAGE_NAME
+          
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "master" ] && VERSION=latest
+
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+
+          docker tag image $IMAGE_ID:$VERSION
+
+          docker login --username ${{ secrets.DUSER }} --password ${{ secrets.DPASS }}
+          docker push $IMAGE_ID:$VERSION
+          docker logout
