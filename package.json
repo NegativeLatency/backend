@@ -1,0 +1,25 @@
+{
+  "name": "hyper.media-backend",
+  "version": "0.0.1",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/koa": "^2.11.2",
+    "@typescript-eslint/eslint-plugin": "^2.23.0",
+    "@typescript-eslint/parser": "^2.23.0",
+    "eslint": "^6.8.0",
+    "nodemon": "^2.0.2",
+    "ts-node": "^8.6.2",
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "koa": "^2.11.0"
+  },
+  "scripts": {
+    "lint": "npx eslint src/**/*",
+    "build": "rm -rf dist/ && npm run lint && npx tsc",
+    "serve": "node -r ts-node/register ./src/index.ts",
+    "serve:watch" : "npx nodemon src/index.ts",
+    "debug": "npx nodemon --inspect src/index.ts"
+  }
+}
