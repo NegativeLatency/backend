@@ -28,8 +28,9 @@ jobs:
         run: |
           yarn
           npm run build
-          npm run prepare-test
+          wget http://iurevych.github.io/Flat-UI-videos/big_buck_bunny.mp4 -O test.mp4
           npm run test
+          rm -rf test.mp4
 
   publish:
     needs: test

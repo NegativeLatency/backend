@@ -23,7 +23,6 @@
   "scripts": {
     "lint": "npx eslint src/**/*",
     "build": "rm -rf dist/ && npm run lint && npx tsc",
-    "prepare-test": "curl -ksSL --output test.mp4 http://iurevych.github.com/Flat-UI-videos/big_buck_bunny.mp4",
     "test": "mocha --exit",
     "serve": "node -r ts-node/register ./src/index.ts",
     "serve:watch": "npx nodemon src/index.ts",
