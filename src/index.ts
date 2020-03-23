@@ -1,12 +1,3 @@
-import * as koa from 'koa'
+import * as RTMP from './servers/rtmp-server'
 
-// @ts-ignore
-const app: koa = new koa()
-
-app.use(async ctx => {
-    ctx.body = "Helloword";
-});
-
-app.listen(3000)
-
-console.log("http://localhost:3000")
+RTMP.defaults().run()
