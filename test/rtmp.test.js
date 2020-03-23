@@ -1,14 +1,11 @@
 const utils = require('./utils.test')
 const rtmp = require('../dist/servers/rtmp-server')
 
-describe('Test RTMP', function () {
+describe('Test RTMP', async function () {
     const rtmpServer = rtmp.defaults()
     const port = rtmpServer.config.http.port
 
     it('test RTMP streaming', async function () {
-
-        // fetch example media
-        await utils.getMedia('test.mp4', 'http://iurevych.github.com/Flat-UI-videos/big_buck_bunny.mp4')
 
         // run media server
         rtmp.defaults().run()
