@@ -22,7 +22,7 @@
   },
   "scripts": {
     "lint": "npx eslint src/**/*",
-    "build": "rm -rf dist/ && npm run lint && npx tsc",
+    "build": "rm -rf dist/ && npx tsc",
     "test": "npm run build && mocha --exit",
     "serve": "node -r ts-node/register ./src/index.ts",
     "serve:watch": "npx nodemon src/index.ts",
