@@ -8,6 +8,7 @@
     "@typescript-eslint/eslint-plugin": "^2.23.0",
     "@typescript-eslint/parser": "^2.23.0",
     "eslint": "^6.8.0",
+    "mininet": "^2.7.1",
     "mocha": "^7.1.1",
     "nodemon": "^2.0.2",
     "ts-node": "^8.6.2",
@@ -24,6 +25,7 @@
   "scripts": {
     "lint": "npx eslint src/**/*",
     "build": "rm -rf dist/ && npm run lint && npx tsc",
+    "build:script": "rm -rf distScripts/ && npx tsc --build scripts.tsconfig.json",
     "test": "mocha --exit",
     "serve": "node -r ts-node/register ./src/index.ts",
     "serve:watch": "npx nodemon src/index.ts",
