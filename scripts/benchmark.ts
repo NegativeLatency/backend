@@ -38,7 +38,7 @@ async function getMedia(name: string, url: string) {
 const startServer = async () => {
     const instance = RTMP.defaults()
     instance.run();
-    sleep(1000)
+    await sleep(1000)
     return instance;
 }
 
@@ -86,7 +86,6 @@ const main = async () => {
     });
 
     framesMonitor.on('exit', () => {
-        console.log(videoLatency);
         nms.server.stop();
     });
      
