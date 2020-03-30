@@ -60,9 +60,11 @@ const main = async () => {
     const fileName = await getMedia("test.mp4", "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4");
     const nms = await startServer();
 
-    const startTime = Date.now();
-
     const streamUrl = await startStream(fileName);
+    // timestamp for streaming just started
+    const startTime = Date.now() - PAUSE;
+
+
     const framesMonitorOptions = {
         ffprobePath: '/usr/local/bin/ffprobe',
         timeoutInMs: 2000,
@@ -77,11 +79,12 @@ const main = async () => {
     const audioLatency = []
 
     framesMonitor.on('frame', frameInfo => {
+        // Assume stream at the same time, current video time stamp - (streaming time) should be the latency?
         if (frameInfo.media_type == 'audio') {
-            audioLatency.push(frameInfo.pkt_pts_time * 1000 - PAUSE)
+            audioLatency.push(frameInfo.pkt_pts_time * 1000 - (Date.now() - startTime));
         } else {
             console.log(Date.now() - startTime)
-            videoLatency.push(frameInfo.pkt_pts_time * 1000 - PAUSE)
+            videoLatency.push(frameInfo.pkt_pts_time * 1000 - (Date.now() - startTime))
         }
     });
 
