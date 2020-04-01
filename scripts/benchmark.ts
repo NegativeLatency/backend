@@ -1,7 +1,26 @@
 import { execFile } from "child_process"
-import * as RTMP from "../src/servers/rtmp-server"
 import * as fs from "fs"
-import { FramesMonitor } from 'video-quality-tools'
+
+// @ts-ignore
+import * as MiniNet from 'mininet';
+
+const linkOpt = {
+    bandwidth: 10,  // Mbps
+    delay: '50ms',
+    loss: 0,
+    htb: true
+};
+const mn = MiniNet();
+const sw = mn.createSwitch();
+const serverHost = mn.createHost();
+const spectatorHost = mn.createHost();
+const streamerHost = mn.createHost();
+serverHost.link(sw, linkOpt);
+spectatorHost.link(sw, linkOpt);
+streamerHost.link(sw, linkOpt);
+
+// start mininet
+mn.start();
 
 const sleep = (it: number) => {
     return new Promise((resolve) => {
@@ -35,64 +54,54 @@ async function getMedia(name: string, url: string) {
     return name
 }
 
-const startServer = async () => {
-    const instance = RTMP.defaults()
-    instance.run();
-    await sleep(1000)
-    return instance;
+const startServer = () => {
+    return serverHost.spawn('node server.js')
 }
 
-const startStream = async (fileName: string) => {
-    const url = "rtmp://localhost/live/test";
-    shellAsync(`ffmpeg -re -i ${fileName} -c copy -f flv ${url}`);
-    await sleep(100);
-    return url;
+const startSpectator = () => {
+    return spectatorHost.spawn(`node spectator.js rtmp://${serverHost.ip}/live/test`)
 }
 
-const reciveStream = async (streamUrl: string) => {
-    await shellAsync(`ffmpeg -i ${streamUrl} -acodec copy -vcodec copy dump.mp4`)
+const startStreamer = (fileName: string) => {
+    return streamerHost.spawn(`ffmpeg -re -i ${fileName} -c copy -f flv rtmp://${serverHost.ip}/live/test`)
 }
 
 const main = async () => {
 
-    const PAUSE = 100;
+    console.info('RTMP Test Starts')
+    let startTime = 0;
 
+    // prepare file
+    console.info('Preparing File')
     const fileName = await getMedia("test.mp4", "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4");
-    const nms = await startServer();
+    console.info('Streaming File Prepared')
 
-    const streamUrl = await startStream(fileName);
     // timestamp for streaming just started
-    const startTime = Date.now() - PAUSE;
+    const serverProc = startServer();
+    serverProc.on('message:ready', function () {
+        console.info('RTMP Server Ready')
 
+        const streamerProc = startStreamer(fileName)
+        streamerProc.on('spawn', function () {
+            startTime = Date.now();
+            console.info('RTMP Streamer Started')
 
-    const framesMonitorOptions = {
-        ffprobePath: '/usr/local/bin/ffprobe',
-        timeoutInMs: 2000,
-        bufferMaxLengthInBytes: 100000,
-        errorLevel: 'error',
-        exitProcessGuardTimeoutInMs: 1000,
-        analyzeDurationInMs: 9000
-    };
-    const framesMonitor = new FramesMonitor(framesMonitorOptions, streamUrl);
- 
-    const videoLatency = []
-    const audioLatency = []
+            const spectatorProc = startSpectator();
+            spectatorProc.on('message:ready', function (d) {
+                console.info('RTMP Spectator Ready', d)
+            })
+            
+            spectatorProc.on('message:data', function (data) {
+                console.log(data)
+            })
 
-    framesMonitor.on('frame', frameInfo => {
-        // Assume stream at the same time, current video time stamp - (streaming time) should be the latency?
-        if (frameInfo.media_type == 'audio') {
-            audioLatency.push(frameInfo.pkt_pts_time * 1000 - (Date.now() - startTime));
-        } else {
-            console.log(Date.now() - startTime)
-            videoLatency.push(frameInfo.pkt_pts_time * 1000 - (Date.now() - startTime))
-        }
-    });
-
-    framesMonitor.on('exit', () => {
-        nms.server.stop();
-    });
-     
-    framesMonitor.listen();
+            spectatorProc.on('message:stop', function () {
+                console.info('RTMP Test Completed')
+                mn.stop()
+                process.exit(0)
+            })
+        })
+    })
 }
 
-main();
+main()
