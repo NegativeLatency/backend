@@ -1,6 +1,7 @@
 node_modules/
 dist/
 distScripts/
+.DS_Store
 
 *.mp4
 spectator-tests.json
