@@ -24,11 +24,13 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: install deps
         run: |
-          apt-get update 
-          apt-get install -y --no-install-recommends mininet
-          apt-get install -y --no-install-recommends python make g++ 
-          apt-get install -y --no-install-recommends openssl ffmpeg 
-          service openvswitch-switch start
+          sudo apt-get update 
+          sudo add-apt-repository ppa:jonathonf/ffmpeg-4
+          sudo apt-get install -y --no-install-recommends curl iproute2 iputils-ping mininet openvswitch-switch openvswitch-testcontroller tcpdump 
+          sudo apt-get install -y --no-install-recommends mininet
+          sudo apt-get install -y --no-install-recommends python make g++ 
+          sudo apt-get install -y --no-install-recommends openssl ffmpeg 
+          sudo service openvswitch-switch start
       - name: benchmark
         run: |
           yarn
