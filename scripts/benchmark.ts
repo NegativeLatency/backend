@@ -122,7 +122,7 @@ const main = async () => {
             startTime = Date.now();
             console.info('RTMP Streamer Started')
 
-	    const results = await doSpectatorTest(testingTarget);
+            const results = await doSpectatorTest(testingTarget);
             
             fs.writeFileSync('spectator-tests.json', JSON.stringify(results))
             stopTest()
