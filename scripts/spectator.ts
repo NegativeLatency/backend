@@ -45,6 +45,7 @@ framesMonitor.on('error', (err) => {
 
 const main = async () => {
     framesMonitor.listen();
+    console.log("starting...")
     MiniNetHost.send('ready', streamUrl);
 }
 
