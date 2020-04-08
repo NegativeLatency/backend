@@ -102,8 +102,9 @@ const stopTest = () => {
 
 const main = async () => {
 
-    console.info('RTMP Test Starts')
     let startTime = 0;
+    const testingTarget = process.argv[2];
+    console.info(`${testingTarget} test started`);
 
     // prepare file
     console.info('Preparing File')
@@ -121,11 +122,7 @@ const main = async () => {
             startTime = Date.now();
             console.info('RTMP Streamer Started')
 
-            const results = await Promise.all(
-                Object
-                    .keys(spectatorTests)
-                    .map(k => doSpectatorTest(k))
-            );
+	    const results = await doSpectatorTest(testingTarget);
             
             fs.writeFileSync('spectator-tests.json', JSON.stringify(results))
             stopTest()

@@ -24,7 +24,7 @@
   },
   "scripts": {
     "lint": "npx eslint src/**/*",
-    "run:benchmark": "npx ts-node ./scripts/benchmark.ts",
+    "run:benchmark": "bash ./scripts/benchmark.sh",
     "build": "rm -rf dist/ && npm run lint && npx tsc",
     "build:script": "rm -rf distScripts/ && npx tsc --build scripts.tsconfig.json",
     "test": "mocha --exit",
