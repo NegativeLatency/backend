@@ -1,0 +1,36 @@
+name: Benchmark
+
+on: 
+  pull_request:
+    branches:
+      - master
+    types: [labeled]
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    name: benchmark
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+      - name: Checkout latest code
+        uses: actions/checkout@v2
+      - name: Use node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: install deps
+        run: |
+          apt-get update 
+          apt-get install -y --no-install-recommends mininet
+          apt-get install -y --no-install-recommends python make g++ 
+          apt-get install -y --no-install-recommends openssl ffmpeg 
+          service openvswitch-switch start
+      - name: benchmark
+        run: |
+          yarn
+          yarn run:benchmark
+          cat spectator-tests.json
