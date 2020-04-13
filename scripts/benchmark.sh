@@ -6,7 +6,6 @@ RES="["
 rm -f ./spectator-tests.json
 for p in $(echo $PROTOS | tr ";" "\n"); do
     npx ts-node ./scripts/benchmark.ts $p
-    RES="$RES$(cat ./spectator-tests.json)"
+    RES="$RES$(cat ./spectator-tests.json),"
+    echo "$(echo $RES | rev | cut -c 2- | rev)]" > ./spectator-tests.json
 done
-RES="$RES]"
-echo "$RES" > ./spectator-tests.json

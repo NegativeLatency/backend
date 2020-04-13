@@ -11,13 +11,21 @@ const linkOpt = {
     htb: true
 };
 
-const spectatorTests: { [key: string]: [string, string] } = {
-    RTMP: ['rtmp', '/test'],
-    HTTPFLV: ['http', '/test.flv'],
-    // WSFLV: ['ws', '/test.flv'],
-    HLS: ['http', '/test/index.m3u8'],
-    DASH: ['http', '/test/index.mpd']
+const spectatorTests: { [key: string]: string } = {
+    RTMP: 'rtmp://ADDRESS:1935/live/test',
+    HTTPFLV: 'http://ADDRESS:8087/live/test.flv',
+    HLS: 'http://ADDRESS:8087/live/test/index.m3u8',
+    DASH: 'http://ADDRESS:8087/live/test/index.mpd',
 }
+
+const spectatorDelays: { [key: string]: number } = {
+    RTMP: 3,
+    HTTPFLV: 3,
+    HLS: 8,
+    DASH: 8,
+}
+
+let startTime = 0;
 
 const mn = MiniNet();
 const sw = mn.createSwitch();
@@ -71,28 +79,13 @@ const startStreamer = (fileName: string) => {
     return streamerHost.spawn(`ffmpeg -re -i ${fileName} -c copy -f flv rtmp://${serverHost.ip}/live/test`)
 }
 
-const startSpectator = (proto: string, room: string) => {
-    return spectatorHost.spawn(`ts-node scripts/spectator.ts ${proto}://${serverHost.ip}/live${room}`)
+const startSpectator = (url: string) => {
+    return spectatorHost.spawn(`ts-node scripts/spectator.ts ${url.replace(/ADDRESS/g, serverHost.ip)}`)
 }
 
 const doSpectatorTest = (key: string) => {
-    const [proto, room] = spectatorTests[key];
-    return new Promise(resolve => {
-        const spectatorProc = startSpectator(proto, room);
-        let data = [];
-        spectatorProc.on('message:ready', function (d) {
-            console.info(`RTMP Spectator Ready: ${room}`, d)
-        })
-        
-        spectatorProc.on('message:data', function (_data) {
-            data.push(_data);
-        })
-
-        spectatorProc.on('message:stop', function () {
-            console.info(`RTMP Test Completed: ${room}`);
-            resolve({key, data});
-        })
-    })
+    const spectatorProc = startSpectator(spectatorTests[key]);
+    return spectatorProc
 }
 
 const stopTest = () => {
@@ -102,7 +95,6 @@ const stopTest = () => {
 
 const main = async () => {
 
-    let startTime = 0;
     const testingTarget = process.argv[2];
     console.info(`${testingTarget} test started`);
 
@@ -114,19 +106,34 @@ const main = async () => {
     // timestamp for streaming just started
     const serverProc = startServer();
     serverProc.on('message:ready', function () {
-        console.info('RTMP Server Ready')
+        console.info(`${testingTarget} Server Ready`)
 
-        const streamerProc = startStreamer(fileName)
-        streamerProc.on('spawn', async function () {
+        let data = [];
+        const proc = doSpectatorTest(testingTarget);
+        proc.on('message:ready', function (d) {
+            console.info(`${testingTarget} Spectator Ready`, d)
 
-            startTime = Date.now();
-            console.info('RTMP Streamer Started')
+            const streamerProc = startStreamer(fileName)
+            streamerProc.on('spawn', async function () {
+                setTimeout(() => proc.send('ready'), spectatorDelays[testingTarget] * 1000 + 1000)
+                startTime = Date.now();
+                console.info(`${testingTarget} Streamer Started`)
+            })
 
-            const results = await doSpectatorTest(testingTarget);
-            
-            fs.writeFileSync('spectator-tests.json', JSON.stringify(results))
+        })
+        
+        proc.on('message:data', function (_data) {
+	    data.push({
+	        frame: _data[0],
+		delay: _data[1] - (_data[0] + startTime),
+		ts: _data[1]
+	    });
+        })
+
+        proc.on('message:stop', function (_reason) {
+            console.info(`${testingTarget} Test Completed`);
+            fs.writeFileSync('spectator-tests.json', JSON.stringify({type: testingTarget, exit:_reason, data}))
             stopTest()
-
         })
     })
 }

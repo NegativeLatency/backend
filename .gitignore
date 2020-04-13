@@ -4,4 +4,5 @@ distScripts/
 .DS_Store
 
 *.mp4
+media
 spectator-tests.json

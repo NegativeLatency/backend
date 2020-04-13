@@ -6,6 +6,7 @@ const ffmpeg = fs.existsSync('/usr/bin/ffmpeg')
 
 /* eslint-disable */
 export const defaultNMSConfig = () => ({
+    // logType: 4,
     rtmp: {
         port: 1935,
         chunk_size: 60000,
@@ -15,7 +16,8 @@ export const defaultNMSConfig = () => ({
     },
     http: {
         port: 8087,
-        allow_origin: '*'
+        allow_origin: '*',
+        mediaroot: './media'
     },
     trans: {
         ffmpeg,
@@ -25,8 +27,10 @@ export const defaultNMSConfig = () => ({
             vcParam: [],
             ac: "aac",
             acParam: ['-ab', '64k', '-ac', '1', '-ar', '44100'],
-            rtmp:true,
-            rtmpApp:'live2',
+            // rtmp:true,
+            // rtmpApp:'live2',
+            // mp4: true,
+            // mp4Flags: '[movflags=faststart]',
             hls: true,
             hlsFlags: '[hls_time=2:hls_list_size=3:hls_flags=delete_segments]',
             dash: true,

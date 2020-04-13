@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM jrottenberg/ffmpeg:4.2-ubuntu1804
 
 LABEL maintainer="NHibiki"
 
@@ -7,21 +7,26 @@ LABEL maintainer="NHibiki"
 WORKDIR /server
 COPY . .
 
-RUN set -ex \
- && apk add --no-cache nodejs openssl ffmpeg \
- && apk add --no-cache curl python npm make g++ \
+RUN apt update \
+ && apt install -y --no-install-recommends \
+    curl \
+    gnupg \
+    gcc \
+    g++ \
+    make \
+    iproute2 \
+    iputils-ping \
+    mininet \
+    net-tools \
+    openvswitch-switch \
+    openvswitch-testcontroller \
+    tcpdump \
+ && curl -sL https://deb.nodesource.com/setup_12.x | bash - \
+ && apt install -y --no-install-recommends nodejs \
+ && rm -rf /var/lib/apt/lists/* \
  && npm i -g yarn \
  && yarn install \
  && yarn build
-
-# Packaging
-
-FROM alpine:3.9
-
-WORKDIR /server
-COPY --from=0 /server /server
-
-RUN apk add --no-cache nodejs openssl ffmpeg
 
 EXPOSE 80
 
