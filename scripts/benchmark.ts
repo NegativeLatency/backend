@@ -3,6 +3,7 @@ import * as fs from "fs"
 
 // @ts-ignore
 import * as MiniNet from 'mininet';
+import { RTMPServer } from "../src/servers/rtmp-server";
 
 const linkOpt = {
     bandwidth: 10,  // Mbps
@@ -11,13 +12,14 @@ const linkOpt = {
     htb: true
 };
 
+const RTMPPort = parseInt(process.argv[3], 10) || 1935;
+const HTTPPort = parseInt(process.argv[4], 10) || 8087;
 const spectatorTests: { [key: string]: string } = {
-    RTMP: 'rtmp://ADDRESS:1935/live/test',
-    HTTPFLV: 'http://ADDRESS:8087/live/test.flv',
-    HLS: 'http://ADDRESS:8087/live/test/index.m3u8',
-    DASH: 'http://ADDRESS:8087/live/test/index.mpd',
+    RTMP: `rtmp://ADDRESS:${RTMPPort}/live/test`,
+    HTTPFLV: `http://ADDRESS:${HTTPPort}/live/test.flv`,
+    HLS: `http://ADDRESS:${HTTPPort}/live/test/index.m3u8`,
+    DASH: `http://ADDRESS:${HTTPPort}/live/test/index.mpd`,
 }
-
 const spectatorDelays: { [key: string]: number } = {
     RTMP: 3,
     HTTPFLV: 3,
@@ -72,7 +74,7 @@ async function getMedia(name: string, url: string) {
 }
 
 const startServer = () => {
-    return serverHost.spawn('ts-node scripts/server.ts')
+    return serverHost.spawn(`ts-node scripts/server.ts ${RTMPPort} ${HTTPPort}`)
 }
 
 const startStreamer = (fileName: string) => {
@@ -96,7 +98,7 @@ const stopTest = () => {
 const main = async () => {
 
     const testingTarget = process.argv[2];
-    console.info(`${testingTarget} test started`);
+    console.info(`${testingTarget} test started (${RTMPPort}:${HTTPPort})`);
 
     // prepare file
     console.info('Preparing File')
@@ -123,11 +125,11 @@ const main = async () => {
         })
         
         proc.on('message:data', function (_data) {
-	    data.push({
-	        frame: _data[0],
-		delay: _data[1] - (_data[0] + startTime),
-		ts: _data[1]
-	    });
+            data.push({
+                frame: _data[0],
+                delay: _data[1] - (_data[0] + startTime),
+                ts: _data[1]
+            });
         })
 
         proc.on('message:stop', function (_reason) {

@@ -21,3 +21,7 @@ export class RTMPServer implements Server {
 export function defaults() {
     return new RTMPServer(defaultNMSConfig())
 }
+
+export function withPort(rtmp=1935, http=8087) {
+    return new RTMPServer(defaultNMSConfig(rtmp, http))
+}
