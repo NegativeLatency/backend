@@ -9,6 +9,7 @@ COPY . .
 
 RUN apt update \
  && apt install -y --no-install-recommends \
+    wget \
     curl \
     gnupg \
     gcc \
@@ -26,8 +27,14 @@ RUN apt update \
  && rm -rf /var/lib/apt/lists/* \
  && npm i -g yarn \
  && yarn install \
- && yarn build
+ && mkdir -p /server/keys \
+ && mkdir -p /server/media \
+ && wget -qO /server/quic/backend https://github.com/NegativeLatency/backend/releases/download/v0.1/backend \
+ && chmod +x /server/quic/backend
 
-EXPOSE 80
+EXPOSE 1935
+EXPOSE 8087
+EXPOSE 8088
+EXPOSE 8089
 
-ENTRYPOINT ["node", "dist/index.js"]
+ENTRYPOINT ["npx", "ts-node", "src/index.ts"]

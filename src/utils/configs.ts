@@ -5,7 +5,7 @@ const ffmpeg = fs.existsSync('/usr/bin/ffmpeg')
     : '/usr/local/bin/ffmpeg';
 
 /* eslint-disable */
-export const defaultNMSConfig = (rtmp=1935, http=8087) => ({
+export const defaultNMSConfig = (rtmp=1935, http=8087, http2=8088) => ({
     // logType: 4,
     rtmp: {
         port: rtmp,
@@ -19,6 +19,10 @@ export const defaultNMSConfig = (rtmp=1935, http=8087) => ({
         allow_origin: '*',
         mediaroot: './media'
     },
+    http2: {
+        port: http2
+    },
+    http3: {},
     trans: {
         ffmpeg,
         tasks: [{
