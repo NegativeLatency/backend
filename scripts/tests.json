@@ -1,0 +1,62 @@
+[
+    {
+        "linkOpt": {
+            "bandwidth": 10, 
+            "delay": "50ms",
+            "loss": 0,
+            "htb": true
+        },
+        "video": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+        "spectator": 1
+    },
+    {
+        "linkOpt": {
+            "bandwidth": 10, 
+            "delay": "50ms",
+            "loss": 0.5,
+            "htb": true
+        },
+        "video": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+        "spectator": 1
+    },
+    {
+        "linkOpt": {
+            "bandwidth": 10, 
+            "delay": "50ms",
+            "loss": 0.9,
+            "htb": true
+        },
+        "video": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+        "spectator": 1
+    },
+    {
+        "linkOpt": {
+            "bandwidth": 1, 
+            "delay": "50ms",
+            "loss": 0,
+            "htb": true
+        },
+        "video": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+        "spectator": 1
+    },
+    {
+        "linkOpt": {
+            "bandwidth": 100, 
+            "delay": "50ms",
+            "loss": 0,
+            "htb": true
+        },
+        "video": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+        "spectator": 1
+    },
+    {
+        "linkOpt": {
+            "bandwidth": 1, 
+            "delay": "50ms",
+            "loss": 0.5,
+            "htb": true
+        },
+        "video": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+        "spectator": 1
+    }
+]
