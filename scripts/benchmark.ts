@@ -17,12 +17,12 @@ interface ITestSpec {
     spectator: number
 }
 
-const linkOpt: ILinkOpt = {
-    bandwidth: 10,  // Mbps
-    delay: '50ms',
-    loss: 0,
-    htb: true
-};
+// const linkOpt: ILinkOpt = {
+//     bandwidth: 10,  // Mbps
+//     delay: '50ms',
+//     loss: 0,
+//     htb: true
+// };
 
 const RTMPPort = parseInt(process.argv[3], 10) || 1935;
 const HTTPPort = parseInt(process.argv[4], 10) || 8087;
@@ -97,13 +97,8 @@ const startStreamer = (streamerHost: any, serverHost: any, fileName: string) => 
     return streamerHost.spawn(`ffmpeg -re -i ${fileName} -c copy -f flv rtmp://${serverHost.ip}/live/test`)
 }
 
-const startSpectator = (spectatorHost: any, serverHost: any, url: string) => {
-    return spectatorHost.spawn(`ts-node scripts/spectator.ts ${url.replace(/ADDRESS/g, serverHost.ip)}`)
-}
-
-const doSpectatorTest = (spectatorHost: any, serverHost: any, key: string) => {
-    const spectatorProc = startSpectator(spectatorHost, serverHost, spectatorTests[key]);
-    return spectatorProc
+const startSpectator = (spectatorHost: any, serverHost: any, key: string) => {
+    return spectatorHost.spawn(`ts-node scripts/spectator.ts ${spectatorTests[key].replace(/ADDRESS/g, serverHost.ip)}`)
 }
 
 const stopTest = (mn) => {
@@ -113,15 +108,17 @@ const stopTest = (mn) => {
 const test = async (test: ITestSpec) => {
 
     const {linkOpt, video, spectator} = test;
+    delete linkOpt.htb;
 
     const testingTarget = process.argv[2];
     console.info(`${testingTarget} test started (${RTMPPort}:${HTTPPort})`);
 
     // prepare file
     console.info('Preparing File')
-    const fileName = await getMedia("test.mp4", video);
+    const fileName = await getMedia("test.mp4", video)
     console.info('Streaming File Prepared')
     const {serverHost, streamerHost, spectatorHost, mn} = createMiniNet(linkOpt)
+    console.info('Mininet Started')
     // timestamp for streaming just started
     const serverProc = startServer(serverHost);
 
@@ -130,7 +127,7 @@ const test = async (test: ITestSpec) => {
             console.info(`${testingTarget} Server Ready`)
     
             let data = [];
-            const proc = doSpectatorTest(spectatorTests, serverHost, testingTarget);
+            const proc = startSpectator(spectatorHost, serverHost, testingTarget);
             proc.on('message:ready', function (d) {
                 console.info(`${testingTarget} Spectator Ready`, d)
     
@@ -156,6 +153,14 @@ const test = async (test: ITestSpec) => {
                 fs.writeFileSync('spectator-tests.json', JSON.stringify({type: testingTarget, exit:_reason, conditions: linkOpt ,data}))
                 stopTest(mn)
                 resolve()
+            });
+
+            proc.on('error', function (err) {
+                console.error(err)
+            });
+
+            proc.on('exit', function (err) {
+                console.error("exit", err)
             });
         })
     });

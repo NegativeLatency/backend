@@ -3,7 +3,7 @@ import * as fs from "fs"
 
 // @ts-ignore
 import * as MiniNetHost from "mininet/host"
-// const MiniNetHost = { send(a, b?) {} }
+// const MiniNetHost = { send(a, b?) {}, on(a, b?) {} }
 
 let ffprobe = '/usr/bin/ffprobe'
 if (!fs.existsSync(ffprobe)) {
@@ -22,6 +22,7 @@ const framesMonitorOptions = {
 
 const main = async () => {
     MiniNetHost.send('ready', streamUrl);
+    // process.stdin.resume();
 }
 
 const doTest = () => {
@@ -45,6 +46,7 @@ const doTest = () => {
     framesMonitor.on('exit', reason => {
         console.log('exit', reason)
         MiniNetHost.send('stop', reason);
+        process.exit(0)
     })
 
     framesMonitor.on('error', (err) => {
@@ -58,6 +60,5 @@ const doTest = () => {
 MiniNetHost.on('message:ready', () => {
     doTest()
 })
-// doTest()
 
 main();

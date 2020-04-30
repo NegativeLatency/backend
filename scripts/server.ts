@@ -7,6 +7,8 @@ const startServer = async () => {
     const rtmp = parseInt(process.argv[2], 10) || 1935;
     const http = parseInt(process.argv[3], 10) || 8087;
     const instance = RTMP.withPort(rtmp, http);
+    delete instance.config.http2;
+    delete instance.config.http3;
     instance.run();
     return instance;
 }
