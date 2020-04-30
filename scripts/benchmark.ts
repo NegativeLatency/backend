@@ -105,7 +105,7 @@ const stopTest = (mn) => {
     mn.stop()
 }
 
-const test = async (test: ITestSpec) => {
+const startTest = async (test: ITestSpec) => {
 
     const {linkOpt, video, spectator} = test;
     delete linkOpt.htb;
@@ -149,10 +149,10 @@ const test = async (test: ITestSpec) => {
             })
     
             proc.on('message:stop', function (_reason) {
-                console.info(`${testingTarget} Test Completed`);
-                fs.writeFileSync('spectator-tests.json', JSON.stringify({type: testingTarget, exit:_reason, conditions: linkOpt ,data}))
+                console.info(`${testingTarget} Test Completed`)
+                const results = {config: test, type: testingTarget, exit:_reason, conditions: linkOpt ,data}
                 stopTest(mn)
-                resolve()
+                resolve(results)
             });
 
             proc.on('error', function (err) {
@@ -168,10 +168,11 @@ const test = async (test: ITestSpec) => {
 
 const main = async () => {
     const tests: Array<ITestSpec> = JSON.parse(fs.readFileSync("./scripts/tests.json").toString())
+    const results = [];
     for (let testSpec of tests) {
-        await test(testSpec)
+        results.push(await startTest(testSpec))
     }
-
+    fs.writeFileSync('spectator-tests.json', JSON.stringify(results))
 }
 
 main()
