@@ -15,9 +15,12 @@ export const defaultNMSConfig = (rtmp=1935, http=8087, http2=8088) => ({
         ping_timeout: 60
     },
     http: {
-        port: http,
+        port: rtmp+1,
         allow_origin: '*',
         mediaroot: './media'
+    },
+    http1: {
+        port: http
     },
     http2: {
         port: http2
